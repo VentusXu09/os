@@ -2,7 +2,7 @@
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                             main.c
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                                                   xjbx,2017
+                    Operation System,2018
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
 #include "type.h"
@@ -144,9 +144,9 @@ PUBLIC int kernel_main()
 }
 
 
-/*****************************************************************************
- *                                get_ticks
- *****************************************************************************/
+/**
+ * et_ticks
+ */
 PUBLIC int get_ticks()
 {
 	MESSAGE msg;
@@ -182,14 +182,11 @@ struct posix_tar_header
 	/* 500 */
 };
 
-/*****************************************************************************
- *                                untar
- *****************************************************************************/
 /**
+ * untar
  * Extract the tar file and store them.
- * 
  * @param filename The tar file.
- *****************************************************************************/
+ */
 void untar(const char * filename)
 {
 	printf("[extract `%s'\n", filename);
@@ -255,14 +252,11 @@ void untar(const char * filename)
 	printf(" done, %d files extracted]\n", i);
 }
 
-/*****************************************************************************
- *                                shabby_shell
- *****************************************************************************/
 /**
- * A very very simple shell.
- * 
+ * shabby_shell
+ * A very very simple shell to receive input command
  * @param tty_name  TTY file name.
- *****************************************************************************/
+ */
 void shabby_shell(const char * tty_name)
 {
 	int fd_stdin  = open(tty_name, O_RDWR);
@@ -317,32 +311,32 @@ void shabby_shell(const char * tty_name)
 				if(strcmp(rdbuf, "createFile") == 0){
 				    createFile();
 				}
-				else if(strcmp(rdbuf, "writeFile") == 0){
-				    writeFile();
-				}
-				else if(strcmp(rdbuf, "readFile") == 0){
-				    readFile();
-				}
-				else if(strcmp(rdbuf, "removeFile") == 0){
-				    removeFile();
-				}
 				else if(strcmp(rdbuf, "createFolder") == 0){
 				    createFolder();
 				}
-				else if(strcmp(rdbuf, "ls") == 0){
-				    ls();
+				else if(strcmp(rdbuf, "rim") == 0){
+				    readFile();
 				}
-				else if(strcmp(rdbuf, "openFolder") == 0){
-				    openFolder();
+				else if(strcmp(rdbuf, "rmrf") == 0){
+				    removeFile();
+				}
+				else if(strcmp(rdbuf, "wim") == 0){
+				    writeFile();
 				}
 				else if(strcmp(rdbuf, "goback") == 0){
 				    goback();
 				}
-				else if(strcmp(rdbuf, "help") == 0){
-				    help();
+				else if(strcmp(rdbuf, "ls") == 0){
+				    ls();
+				}
+				else if(strcmp(rdbuf, "cd") == 0){
+				    openFolder();
 				}
 				else if(strcmp(rdbuf, "animation") == 0){
 				    animation();
+				}
+				else if(strcmp(rdbuf, "help") == 0){
+				    help();
 				}
 			}
 		}
@@ -363,6 +357,10 @@ void shabby_shell(const char * tty_name)
 	close(0);
 }
 
+/**
+ * ls()
+ * command to show files/documents name in current root
+ */
 void ls(){
 	
 	printf("%s:\n",fs[nowfolder].filename);
@@ -371,6 +369,10 @@ void ls(){
 	}
 }
 
+/**
+ * goback()
+ * goback to the parent document and update the fs[] 
+ */
 void goback(){
 	nowfolder=fs[nowfolder].goback;
 	for(int i=fs[nowfolder].firstchild; fs[i].nextsibling!=-1;i=fs[i].nextsibling)
@@ -378,8 +380,12 @@ void goback(){
 	//printf("%s\n",fs[currentFile].filename);
 }
 
+/**
+ * openFolder()
+ * command to move to the target document
+ */
 void openFolder(){
-    printf("please put in the FolderName\n");
+    printf("please put in the Document Name\n");
     char filename[10]={0};
     read(0, filename, 10);
     for(int i=fs[nowfolder].firstchild; i!=-1;i=fs[i].nextsibling){
@@ -391,6 +397,10 @@ void openFolder(){
 	}
 }
 
+/**
+ * createFolder()
+ * command to create a new folder with the input document name
+ */
 void createFolder(){
 	printf("please put in the FolderName\n");
 	int i=1;
@@ -407,8 +417,12 @@ void createFolder(){
 	currentFile=i;
 }
 
+/**
+ * createFile()
+ * command to create a new file with input name
+ */
 void createFile(){
-	printf("please put in the FileName\n");
+	printf("please put in the File Name\n");
 	int fd;int namefd;
         char filename[10]={0};
 	int i=1;
@@ -431,7 +445,7 @@ void createFile(){
 
 	//assert(rd_bytes <= strlen(bufw));
 
-	/* create */
+	// create 
 	fd = open(fs[currentFile].filename, O_CREAT | O_RDWR);
 	if(fd == -1)
 	{
@@ -464,10 +478,12 @@ void createFile(){
 	//assert(fd != -1);
 	printl("File created: %s \n", fs[currentFile].filename);
 	close(fd);
-        
-
 }
 
+/**
+ * writeFile()
+ * command to modify the file
+ */
 void writeFile(){
 	printf("please put in the FileName\n");
 	int fd;
@@ -477,7 +493,7 @@ void writeFile(){
 	char bufw[128]={0};
 	read(0,bufw,128);
 	fd = open(filename,O_RDWR);
-        if(fd == -1)
+    if(fd == -1)
 	{
 		printf("Fail, please check and try again!!\n");
 		return;
@@ -493,6 +509,10 @@ void writeFile(){
 	close(fd);
 }
 
+/**
+ * readFile()
+ * command to open the file read-only
+ */
 void readFile(){
 	printf("please put in the FileName\n");
 	int fd;
@@ -518,6 +538,10 @@ void readFile(){
 	close(fd);
 }
 
+/**
+ * removeFile()
+ * command to rm
+ */
 void removeFile(){
 	char filename[10]={0};
         read(0,filename,10);
@@ -543,38 +567,41 @@ void removeFile(){
 		printf("Failed to remove file: %s\n", filename);*/
 }
 
-
+/**
+ *	help())
+ *	Print command on the screen
+ */
 void help()
 {
-	printf("********************************************************************************\n");
+	printf("****************************File System*****************************************\n");
 	printf("        name               |                      function                      \n");
 	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-	printf("        animation          |           Play the video\n");
+	printf("        createFile         |           Create a file\n");
+	printf("        createFolder       |           Create a folder\n");
+	printf("        rim                |           Read a file\n");
+	printf("        rmrf               |           Delete a file\n");
+	printf("        wim                |           Edit file, cover the content\n");
+	printf("        goback             |           turn to higher level Folder\n");
 	printf("        ls                 |           List all files in current folder\n");
-	printf("        help               |           List all commands\n");
+	printf("        cd                 |           move to the target folder\n");
+	printf("********************************************************************************\n");
+	printf("\n");
+	printf("***************************Games and tools**************************************\n");
+	printf("        name               |                      function                      \n");
+	printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	printf("        fiveinarow         |           Start game fiveinarow\n");
 	printf("        moveBox            |           Start game moveBox\n");
 	printf("        getDay             |           Start game getDay\n");
-        printf("        openFolder         |           Start game getDay\n");
 	printf("        calculator         |           Start a calculator\n");
-	printf("        createFile         |           Create a file\n");
-	printf("        createFolder       |           Create a folder\n");
-	printf("        readFile           |           Read a file\n");
-	printf("        removeFile         |           Delete a file\n");
-	printf("        writefile          |           Edit file, cover the content\n");
-	printf("        goback             |           turn to higher level Folder\n");
+	printf("        animation          |           Play the video\n");
 	printf("********************************************************************************\n");
-	
+	printf("Input \"help\" to list all commands\n");
 }
 
 
-/*****************************************************************************
- *                                Init
- *****************************************************************************/
 /**
- * The hen.
- * 
- *****************************************************************************/
+ *	Init()
+ */
 void Init()
 {
 	int fd_stdin  = open("/dev_tty0", O_RDWR);
@@ -587,7 +614,6 @@ void Init()
 	/* extract `cmd.tar' */
 	untar("/cmd.tar");
 			
-
 	char * tty_list[] = {"/dev_tty0"};
 
 	int i;
@@ -616,33 +642,9 @@ void Init()
 }
 
 
-/*======================================================================*
-                               TestA
- *======================================================================*/
-void TestA()
-{
-	for(;;);
-}
-
-/*======================================================================*
-                               TestB
- *======================================================================*/
-void TestB()
-{
-	for(;;);
-}
-
-/*======================================================================*
-                               TestB
- *======================================================================*/
-void TestC()
-{
-	for(;;);
-}
-
-/*****************************************************************************
- *                                panic
- *****************************************************************************/
+/**
+ * panic
+ */
 PUBLIC void panic(const char *fmt, ...)
 {
 	int i;
@@ -659,11 +661,20 @@ PUBLIC void panic(const char *fmt, ...)
 	__asm__ __volatile__("ud2");
 }
 
+/**
+ * clear()
+ * clear screen
+ */
 void clear(){
     for(int i=0;i<30;i++)
 	printf("\n");
 }
 
+
+/**
+ * animation()
+ * Saved picture to print the animation
+ */
 void animation(){
 int i = 0;
 clear();
@@ -1019,10 +1030,13 @@ printf("      @                                                                 
 printf("                                                                        \n\n");
 milli_delay(1000);
 
-
 clear();
 }
 
+/**
+ * Welcome()
+ * show information of our team
+ */
 PUBLIC void welcome()
 {
 
